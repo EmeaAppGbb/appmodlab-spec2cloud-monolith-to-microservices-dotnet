@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Payment Service API
+  description: Handles payment processing via Stripe, refunds, and payment records
+  version: 1.0.0
+
+servers:
+  - url: https://api.urbanbites.com/payment
+  - url: http://localhost:5003
+
+paths:
+  /api/payments/{orderId}/process:
+    post:
+      summary: Process payment for an order
+      operationId: processPayment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessPaymentRequest'
+      responses:
+        '200':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResult'
+        '400':
+          description: Payment failed
+        '404':
+          description: Order not found
+
+  /api/payments/{orderId}:
+    get:
+      summary: Get payment details for an order
+      operationId: getPayment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+
+  /api/payments/{paymentId}/refund:
+    post:
+      summary: Refund a payment
+      operationId: refundPayment
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Refund processed
+        '404':
+          description: Payment not found
+
+components:
+  schemas:
+    ProcessPaymentRequest:
+      type: object
+      required: [paymentMethodId]
+      properties:
+        paymentMethodId:
+          type: string
+
+    PaymentResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        paymentId:
+          type: integer
+        stripePaymentIntentId:
+          type: string
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        stripePaymentIntentId:
+          type: string
+        amount:
+          type: number
+          format: decimal
+        status:
+          type: string
+        processedAt:
+          type: string
+          format: date-time

@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Customer Service API
+  description: Manages customer profiles, authentication, and loyalty points
+  version: 1.0.0
+
+servers:
+  - url: https://api.urbanbites.com/customer
+  - url: http://localhost:5005
+
+paths:
+  /api/customers/{id}:
+    get:
+      summary: Get customer by ID
+      operationId: getCustomer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+    put:
+      summary: Update customer profile
+      operationId: updateCustomer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: Customer updated
+        '404':
+          description: Customer not found
+
+  /api/customers:
+    post:
+      summary: Register a new customer
+      operationId: registerCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCustomerRequest'
+      responses:
+        '201':
+          description: Customer registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Validation error (duplicate email)
+
+  /api/customers/{id}/loyalty:
+    get:
+      summary: Get loyalty points balance
+      operationId: getLoyaltyPoints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Loyalty points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customerId:
+                    type: integer
+                  points:
+                    type: integer
+
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        defaultAddress:
+          type: string
+        loyaltyPoints:
+          type: integer
+
+    RegisterCustomerRequest:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        defaultAddress:
+          type: string
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        defaultAddress:
+          type: string

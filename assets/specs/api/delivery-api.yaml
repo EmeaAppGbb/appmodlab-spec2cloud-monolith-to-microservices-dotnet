@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Delivery Service API
+  description: Manages delivery tracking, driver assignment, and real-time location
+  version: 1.0.0
+
+servers:
+  - url: https://api.urbanbites.com/delivery
+  - url: http://localhost:5004
+
+paths:
+  /api/deliveries/{orderId}:
+    get:
+      summary: Get delivery status for an order
+      operationId: getDelivery
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Delivery details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '404':
+          description: Delivery not found
+
+  /api/deliveries/{deliveryId}/location:
+    put:
+      summary: Update delivery location (driver reports position)
+      operationId: updateLocation
+      parameters:
+        - name: deliveryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdate'
+      responses:
+        '204':
+          description: Location updated
+
+  /api/drivers/available:
+    get:
+      summary: List available drivers
+      operationId: getAvailableDrivers
+      responses:
+        '200':
+          description: Available drivers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Driver'
+
+  /api/deliveries/assign:
+    post:
+      summary: Assign a driver to an order
+      operationId: assignDriver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId]
+              properties:
+                orderId:
+                  type: integer
+      responses:
+        '200':
+          description: Driver assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '404':
+          description: No available drivers
+
+components:
+  schemas:
+    Delivery:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        driverId:
+          type: integer
+        status:
+          type: string
+          enum: [Created, Assigned, PickedUp, InTransit, Delivered]
+        pickupTime:
+          type: string
+          format: date-time
+        deliveryTime:
+          type: string
+          format: date-time
+        currentLocation:
+          type: string
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        vehicleType:
+          type: string
+        isAvailable:
+          type: boolean
+        currentLocation:
+          type: string
+        rating:
+          type: number
+          format: decimal
+
+    LocationUpdate:
+      type: object
+      required: [location]
+      properties:
+        location:
+          type: string
+          description: Lat,Lng or address string

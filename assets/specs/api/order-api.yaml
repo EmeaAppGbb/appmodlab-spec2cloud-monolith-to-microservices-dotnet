@@ -1,0 +1,165 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Order Service API
+  description: Manages order lifecycle, order items, and pricing calculations
+  version: 1.0.0
+
+servers:
+  - url: https://api.urbanbites.com/order
+  - url: http://localhost:5002
+
+paths:
+  /api/orders:
+    post:
+      summary: Place a new order
+      operationId: placeOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Validation error (invalid customer, restaurant, or menu items)
+
+  /api/orders/{id}:
+    get:
+      summary: Get order by ID
+      operationId: getOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+
+  /api/orders/{id}/status:
+    put:
+      summary: Update order status
+      operationId: updateOrderStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      responses:
+        '204':
+          description: Status updated
+        '404':
+          description: Order not found
+        '400':
+          description: Invalid status transition
+
+  /api/orders/{id}/items:
+    get:
+      summary: Get order items
+      operationId: getOrderItems
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderItem'
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerId:
+          type: integer
+        restaurantId:
+          type: integer
+        status:
+          type: string
+          enum: [Pending, Paid, Assigned, PickedUp, Delivered, Cancelled]
+        totalAmount:
+          type: number
+          format: decimal
+        placedAt:
+          type: string
+          format: date-time
+        deliveryAddress:
+          type: string
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        menuItemId:
+          type: integer
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: decimal
+        specialInstructions:
+          type: string
+
+    CreateOrderRequest:
+      type: object
+      required: [customerId, restaurantId, items, deliveryAddress]
+      properties:
+        customerId:
+          type: integer
+        restaurantId:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            required: [menuItemId, quantity]
+            properties:
+              menuItemId:
+                type: integer
+              quantity:
+                type: integer
+              specialInstructions:
+                type: string
+        deliveryAddress:
+          type: string
+
+    UpdateStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [Pending, Paid, Assigned, PickedUp, Delivered, Cancelled]

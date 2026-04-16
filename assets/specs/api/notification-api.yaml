@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Notification Service API
+  description: Event-driven notification service for email, push, and SMS
+  version: 1.0.0
+
+servers:
+  - url: https://api.urbanbites.com/notification
+  - url: http://localhost:5006
+
+paths:
+  /api/notifications/send:
+    post:
+      summary: Send a notification
+      operationId: sendNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+      responses:
+        '202':
+          description: Notification accepted for delivery
+        '400':
+          description: Invalid notification request
+
+  /api/notifications/templates:
+    get:
+      summary: List notification templates
+      operationId: listTemplates
+      responses:
+        '200':
+          description: Available templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationTemplate'
+
+components:
+  schemas:
+    SendNotificationRequest:
+      type: object
+      required: [channel, recipient, templateId, data]
+      properties:
+        channel:
+          type: string
+          enum: [email, sms, push]
+        recipient:
+          type: string
+          description: Email address, phone number, or device token
+        templateId:
+          type: string
+          description: Template identifier (e.g., order-confirmation, status-update)
+        data:
+          type: object
+          additionalProperties: true
+          description: Template variables (orderId, status, etc.)
+
+    NotificationTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        channel:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string

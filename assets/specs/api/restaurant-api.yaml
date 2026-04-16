@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: UrbanBites Restaurant & Menu Service API
+  description: Manages restaurant catalog, menu items, and promotions
+  version: 1.0.0
+  contact:
+    name: UrbanBites Platform Team
+
+servers:
+  - url: https://api.urbanbites.com/restaurant
+    description: Production
+  - url: http://localhost:5001
+    description: Local development
+
+paths:
+  /api/restaurants:
+    get:
+      summary: List active restaurants
+      operationId: listRestaurants
+      parameters:
+        - name: cuisine
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of active restaurants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Restaurant'
+                  totalCount:
+                    type: integer
+    post:
+      summary: Create a new restaurant
+      operationId: createRestaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRestaurantRequest'
+      responses:
+        '201':
+          description: Restaurant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+        '400':
+          description: Validation error
+
+  /api/restaurants/{id}:
+    get:
+      summary: Get restaurant by ID
+      operationId: getRestaurant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Restaurant details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+        '404':
+          description: Restaurant not found
+
+  /api/restaurants/{id}/menu:
+    get:
+      summary: Get menu items for a restaurant
+      operationId: getMenu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of available menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
+
+  /api/restaurants/{id}/promotions:
+    get:
+      summary: Get active promotions for a restaurant
+      operationId: getPromotions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Active promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Promotion'
+
+components:
+  schemas:
+    Restaurant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        cuisine:
+          type: string
+        rating:
+          type: number
+          format: decimal
+        isActive:
+          type: boolean
+        commissionRate:
+          type: number
+          format: decimal
+
+    CreateRestaurantRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        cuisine:
+          type: string
+        commissionRate:
+          type: number
+
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        restaurantId:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        category:
+          type: string
+        isAvailable:
+          type: boolean
+        prepTime:
+          type: integer
+
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        discountType:
+          type: string
+          enum: [Percentage, Fixed]
+        value:
+          type: number
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
