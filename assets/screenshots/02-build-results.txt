@@ -1,0 +1,50 @@
+=============================================================
+  UrbanBites Monolith - Build Results
+  SDK: .NET 10.0.201 (only SDK available)
+  Target: netcoreapp3.1
+=============================================================
+
+BUILD STATUS: SUCCESS (with warnings)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  dotnet restore UrbanBites.sln ... Restore complete (9.3s)
+  dotnet build --no-restore     ... Build succeeded with 1 warning(s) in 5.3s
+
+  UrbanBites.Web   → bin\Debug\netcoreapp3.1\UrbanBites.Web.dll      ✅ Built
+  UrbanBites.Tests → bin\Debug\netcoreapp3.1\UrbanBites.Tests.dll    ✅ Built
+
+WARNINGS:
+  NETSDK1138: Target framework 'netcoreapp3.1' is out of support
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RUN STATUS: CANNOT RUN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  The netcoreapp3.1 RUNTIME is not installed.
+  Only .NET 10.0.5 runtime is available.
+  The app compiles but cannot execute.
+
+  Error: "You must install or update .NET to run this application."
+  Framework required: Microsoft.AspNetCore.App 3.1.0
+  Framework available: Microsoft.AspNetCore.App 10.0.5
+
+TEST STATUS: CANNOT RUN (same runtime issue)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Tests abort with TESTRUNABORT because testhost.exe
+  also requires Microsoft.AspNetCore.App 3.1.0.
+
+NUGET PACKAGES RESTORED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Microsoft.EntityFrameworkCore          3.1.32
+  Microsoft.EntityFrameworkCore.SqlServer 3.1.32
+  Microsoft.EntityFrameworkCore.Design   3.1.32
+  Microsoft.AspNetCore.SignalR           1.1.0
+  Hangfire.AspNetCore                    1.7.28
+  Hangfire.SqlServer                     1.7.28
+  Stripe.net                            39.100.0
+  SendGrid                              9.28.1
+  Microsoft.NET.Test.Sdk                 16.11.0
+  xunit                                 2.4.1
+  xunit.runner.visualstudio             2.4.3

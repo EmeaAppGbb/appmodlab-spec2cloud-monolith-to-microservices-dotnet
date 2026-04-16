@@ -1,0 +1,58 @@
+=============================================================
+  UrbanBites - Spec2Cloud Decomposition Plan
+  From SPEC2CLOUD.MD + README.md
+=============================================================
+
+SPEC2CLOUD CONFIGURATION (SPEC2CLOUD.MD):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  title:        UrbanBites - Monolith to Microservices with Spec2Cloud
+  category:     App Modernization
+  services:     Azure Container Apps, Azure Service Bus, Azure SQL Database
+  frameworks:   ASP.NET Core, Entity Framework Core
+  tags:         Lab, Spec2Cloud, Monolith, Microservices, DotNet
+
+TARGET: 6 MICROSERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  FROM (Legacy):
+    - Single ASP.NET Core 3.1 monolith
+    - 1 shared SqlServer database (30+ tables in README description)
+    - 10 entities in 1 DbContext
+    - 6 services tightly coupled in 1 deploy unit
+
+  TO (Modern):
+    ┌──────────────────────────────────────────────────┐
+    │  🌐 YARP API Gateway / Azure API Management     │
+    ├──────┬──────┬──────┬──────┬──────┬───────────────┤
+    │ 🍕   │ 📦   │ 💳   │ 🚚   │ 👤   │ 📬           │
+    │ REST │ ORD  │ PAY  │ DEL  │ CUST │ NOTIFY        │
+    │ Svc  │ Svc  │ Svc  │ Svc  │ Svc  │ Svc           │
+    ├──────┴──────┴──────┴──────┴──────┴───────────────┤
+    │        Azure Service Bus (Event Backbone)         │
+    ├──────┬──────┬──────┬──────┬──────┬───────────────┤
+    │ DB1  │ DB2  │ DB3  │ DB4  │ DB5  │ DB6           │
+    └──────┴──────┴──────┴──────┴──────┴───────────────┘
+
+DECOMPOSITION STRATEGY: Strangler Fig Pattern
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Phase 1: Add API Gateway in front of monolith
+  Phase 2: Extract Restaurant Service (first out)
+  Phase 3: Extract Order Service + Saga orchestration
+  Phase 4: Extract Payment + Delivery (event-driven)
+  Phase 5: Full decomposition (all 6 services)
+  Phase 6: Cloud deployment + observability
+
+BRANCH WORKFLOW:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  main                         → Documentation only
+  legacy                       → Original monolith (this code)
+  step-1-spec-analysis         → Spec2Cloud bounded context analysis
+  step-2-strangler-fig         → Gateway + Restaurant Service
+  step-3-order-extraction      → Order Service + Saga pattern
+  step-4-payment-delivery      → Payment/Delivery event-driven
+  step-5-full-decomposition    → All 6 services running
+  step-6-observability-deploy  → Azure Container Apps deployment
+  solution                     → Complete reference implementation

@@ -1,0 +1,76 @@
+=============================================================
+  UrbanBites Monolith - Architecture Analysis
+  Anti-Patterns & Decomposition Targets
+=============================================================
+
+MONOLITH ANTI-PATTERNS IDENTIFIED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. GOD DBCONTEXT
+     UrbanBitesDbContext has 10 DbSets spanning all domains:
+     Restaurants, MenuItems, Orders, OrderItems, Payments,
+     Deliveries, Drivers, Customers, Reviews, Promotions
+
+  2. TIGHT SERVICE COUPLING
+     OrderService depends on: PaymentService, NotificationService, PricingService
+     DeliveryAssignmentJob depends on: DeliveryService + DbContext directly
+     All services share one DbContext → one database
+
+  3. CROSS-DOMAIN TRANSACTIONS
+     OrderService.PlaceOrder() does:
+       - Customer lookup → Restaurant lookup → MenuItem validation
+       - Pricing calculation → Order creation → OrderItem creation
+       - Email notification — ALL in one synchronous flow
+
+  4. ALL ENTITIES IN ONE FILE
+     Models/Entities.cs contains 10 entity classes with no domain separation
+
+  5. SYNCHRONOUS CROSS-FEATURE CALLS
+     Hangfire jobs call .Result on async methods (blocking)
+     DeliveryAssignmentJob: _deliveryService.AssignDriver(order.Id).Result
+
+  6. SHARED CONNECTION STRINGS
+     Single SQL Server for app data + Hangfire persistence
+
+BOUNDED CONTEXTS (Spec2Cloud Target):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  🍕 RESTAURANT CONTEXT     → Restaurant, MenuItem
+  📦 ORDER CONTEXT          → Order, OrderItem
+  💳 PAYMENT CONTEXT        → Payment (Stripe integration)
+  🚚 DELIVERY CONTEXT       → Delivery, Driver
+  👤 CUSTOMER CONTEXT       → Customer
+  ⭐ REVIEW CONTEXT         → Review, Promotion
+
+API ENDPOINTS (All in one app):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  GET    /api/restaurant              List active restaurants
+  GET    /api/restaurant/{id}         Get restaurant
+  GET    /api/restaurant/{id}/menu    Get menu items
+  POST   /api/restaurant              Create restaurant
+  POST   /api/order                   Place order
+  GET    /api/order/{id}              Get order
+  PUT    /api/order/{id}/status       Update order status
+  POST   /api/payment/{orderId}/process  Process payment (Stripe)
+  GET    /api/delivery/{orderId}      Get delivery info
+  GET    /api/delivery/drivers/available  List available drivers
+  GET    /api/customer/{id}           Get customer
+  POST   /api/review                  Create review
+  GET    /api/review/{id}             Get review
+  WS     /hubs/delivery               SignalR delivery tracking
+
+BACKGROUND JOBS (Hangfire):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  order-timeout         Every minute: Cancel orders pending > 30 min
+  delivery-assignment   Every minute: Auto-assign drivers to paid orders
+
+EXTERNAL INTEGRATIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Stripe          Payment processing (PaymentService)
+  SendGrid        Email notifications (NotificationService)
+  SignalR         Real-time delivery tracking (DeliveryHub)
+  SQL Server      Data persistence (LocalDB)
+  Hangfire        Background job scheduling

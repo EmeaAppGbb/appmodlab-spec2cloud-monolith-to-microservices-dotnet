@@ -1,0 +1,37 @@
+=============================================================
+  UrbanBites Monolith - Project Structure
+  Lab: appmodlab-spec2cloud-monolith-to-microservices-dotnet
+=============================================================
+
+UrbanBites.sln
+├── UrbanBites.Web/           (ASP.NET Core 3.1 Web API - Monolith)
+│   ├── Controllers/
+│   │   ├── CustomerController.cs      GET /api/customer/{id}
+│   │   ├── DeliveryController.cs      GET /api/delivery/{orderId}, GET /api/delivery/drivers/available
+│   │   ├── OrderController.cs         POST /api/order, GET /api/order/{id}, PUT /api/order/{id}/status
+│   │   ├── PaymentController.cs       POST /api/payment/{orderId}/process
+│   │   ├── RestaurantController.cs    GET /api/restaurant, GET /api/restaurant/{id}, GET /api/restaurant/{id}/menu, POST /api/restaurant
+│   │   └── ReviewController.cs        POST /api/review, GET /api/review/{id}
+│   ├── Data/
+│   │   └── UrbanBitesDbContext.cs     God DbContext - 10 DbSets, single shared database
+│   ├── Hubs/
+│   │   └── DeliveryHub.cs             SignalR hub for real-time delivery tracking
+│   ├── Jobs/
+│   │   ├── DeliveryAssignmentJob.cs   Hangfire recurring job - auto-assign drivers
+│   │   └── OrderTimeoutJob.cs         Hangfire recurring job - cancel stale orders
+│   ├── Models/
+│   │   └── Entities.cs                All 10 entities in ONE file (Restaurant, MenuItem, Order, OrderItem, Payment, Delivery, Driver, Customer, Review, Promotion)
+│   ├── Services/
+│   │   ├── DeliveryService.cs         Driver assignment logic
+│   │   ├── NotificationService.cs     SendGrid email integration
+│   │   ├── OrderService.cs            Order placement, status updates (cross-cutting)
+│   │   ├── PaymentService.cs          Stripe payment processing
+│   │   ├── PricingService.cs          Pricing + promotion calculation
+│   │   └── ReviewService.cs           Review moderation + rating calculation
+│   ├── Program.cs                     Entry point
+│   ├── Startup.cs                     DI registration, middleware, Hangfire config
+│   ├── UrbanBites.Web.csproj          Target: netcoreapp3.1
+│   └── appsettings.json               LocalDB connection strings
+└── UrbanBites.Tests/
+    ├── SampleTests.cs                 Single placeholder test
+    └── UrbanBites.Tests.csproj        Target: netcoreapp3.1
